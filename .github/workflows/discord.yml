@@ -13,13 +13,17 @@ jobs:
           COMMIT="${{ github.event.head_commit.message }}"
           REPO="${{ github.repository }}"
           BRANCH="${{ github.ref_name }}"
-          URL="${{ github.event.head_commit.url }}"
+          SHA="${{ github.sha }}"
 
+          # commitメッセージ空対策
           if [ -z "$COMMIT" ]; then
             COMMIT="No commit message"
           fi
 
-          # Embed JSON作成（jqで安全に生成）
+          # GitHubの正しいコミットURL
+          URL="https://github.com/${REPO}/commit/${SHA}"
+
+          # Embed JSON生成
           PAYLOAD=$(jq -n \
             --arg title "GitHub Push Notification" \
             --arg repo "$REPO" \
@@ -30,18 +34,18 @@ jobs:
               embeds: [
                 {
                   title: $title,
+                  url: $url,
                   color: 5814783,
                   fields: [
                     {name: "📦 Repository", value: $repo, inline: false},
                     {name: "🌿 Branch", value: $branch, inline: true},
                     {name: "📝 Commit", value: $commit, inline: false}
-                  ],
-                  url: $url
+                  ]
                 }
               ]
             }')
 
-          # Discord送信
+          # Discord送信（1回だけ）
           curl -X POST \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD" \
