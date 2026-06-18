@@ -8,12 +8,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Send to Discord
+      - name: Send Discord
         run: |
-          COMMIT_MSG="${{ github.event.head_commit.message }}"
+          COMMIT="${{ github.event.head_commit.message }}"
           REPO="${{ github.repository }}"
-          URL="${{ github.event.head_commit.url }}"
+
+          if [ -z "$COMMIT" ]; then
+            COMMIT="No commit message"
+          fi
 
           curl -H "Content-Type: application/json" \
           -X POST ${{ secrets.DISCORD_WEBHOOK_URL }} \
-          -d "{\"content\":\"📦 Repo: $REPO\n📝 $COMMIT_MSG\n🔗 $URL\"}"
+          -d "{\"content\":\"📦 Repo: $REPO\n📝 $COMMIT\"}"
