@@ -8,23 +8,44 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Send Discord Notification
+      - name: Send Discord Embed Notification
         run: |
-          # GitHub情報取得
           COMMIT="${{ github.event.head_commit.message }}"
           REPO="${{ github.repository }}"
           BRANCH="${{ github.ref_name }}"
+          URL="${{ github.event.head_commit.url }}"
 
-          # 空対策
           if [ -z "$COMMIT" ]; then
             COMMIT="No commit message"
           fi
 
-          # メッセージ生成
-          MESSAGE="📦 Repo: $REPO\n🌿 Branch: $BRANCH\n📝 Commit: $COMMIT"
+          # Embed JSON作成（jqで安全に生成）
+          PAYLOAD=$(jq -n \
+            --arg title "GitHub Push Notification" \
+            --arg repo "$REPO" \
+            --arg branch "$BRANCH" \
+            --arg commit "$COMMIT" \
+            --arg url "$URL" \
+            '{
+              embeds: [
+                {
+                  title: $title,
+                  color: 5814783,
+                  fields: [
+                    {name: "📦 Repository", value: $repo, inline: false},
+                    {name: "🌿 Branch", value: $branch, inline: true},
+                    {name: "📝 Commit", value: $commit, inline: false}
+                  ],
+                  url: $url
+                }
+              ]
+            }')
 
-          # JSON安全生成（重要）
-          PAYLOAD=$(jq -n --arg content "$MESSAGE" '{content:$content}')
+          # Discord送信
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "${{ secrets.DISCORD_WEBHOOK_URL }}"
 
           # Discord送信
           curl -X POST \
