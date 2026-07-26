@@ -105,5 +105,6 @@ https://discord.com/guidelines
 - Discord 性的コンテンツ・児童安全ポリシー  
 https://discord.com/safety/sexual-content-policy-explainer
 
-- e-Gov法令検索  
-https://laws.e-gov.go.jp/
+- e-Gov法令検索 &&ひまわりサーチ
+https://laws.e-gov.go.jp/  https://www.bengoshikai.jp/ 
+
